@@ -27,7 +27,7 @@ class IbSearch:
         except ImportError:
             raise Exception("Aiohttp has to be installed to use this function.")
         else:
-            async with self.session as session:
+            async with aiohttp.ClientSession(loop=self.loop) as session:
                 async with session.get(url, params=params, headers=self.headers) as res:
                     if not res.status == 200:
                         raise UnexpectedResponseCode(res.status)
