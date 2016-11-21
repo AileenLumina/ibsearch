@@ -21,7 +21,7 @@ class IbSearch:
         if loop:
             self.loop = loop
     
-    async def _asyncrequest(url, params):
+    async def _asyncrequest(url, params, future):
         try:
             import aiohttp
         except ImportError:
@@ -32,13 +32,14 @@ class IbSearch:
                     if not res.status == 200:
                         raise UnexpectedResponseCode(res.status)
                     result = await res.json()
-            return result
+            future.set_result(result):
     
     def _request(url, params=None, async_=False)
         params = params or {}
         
         if async_:
-            fut = asyncio.ensure_future(self._async_request(url, params))
+            fut = asyncio.Future()
+            asyncio.ensure_future(self._async_request(url, params, fut))
             while not fut.done():
                 pass
             result = fut.result()
