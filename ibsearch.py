@@ -13,7 +13,7 @@ class UnexpectedResponseCode(Exception):
     pass
 
 class Image:
-    def __init__(self, baseurl, **kwargs):
+    def __init__(self, loop, baseurl, **kwargs):
         self.format = kwargs.get("format")
         self.height = kwargs.get("height")
         self.width = kwargs.get("width")
@@ -21,6 +21,7 @@ class Image:
         self.path = kwargs.get("path")
         self.url = "http://" + kwargs.get("server") + "." + baseurl + self.path
         self.tags = kwargs.get("tags").split()
+        self.loop = loop
 
     @asyncio.coroutine
     def _async_request(self):
@@ -60,11 +61,13 @@ class Image:
             im_bytes = yield from self._async_request()
             bio = io.BytesIO()
             bio.write(im_bytes)
+            bio.seek(0)
             return bio
         else:
             im_bytes = self._request()
             bio = io.BytesIO()
             bio.write(im_bytes)
+            bio.seek(0)
             yield bio
 
     def save(self, async_=False, file=None):
@@ -166,7 +169,7 @@ class IbSearch:
         if len(result) == 0:
             raise NoResults
 
-        images = [Image(domain, **d) for d in result]
+        images = [Image(self.loop, domain, **d) for d in result]
 
         if shuffle:
             images = self.shuffle(images, shuffle_limit)

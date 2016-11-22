@@ -15,6 +15,7 @@ def test():
 def async_test():
     image2 = yield from cl.get_random_image(test_query, async_=True)
     print(image2.url)
+    print((yield from image2.get_image_bytes(async_=True)).read())
     
 def nsfw_test():
     image3 = cl.get_random_image(test_query, nsfw_allowed=True)
