@@ -9,7 +9,7 @@ with open('README.md') as f:
 setup(
     name='ibsearch',
 
-    version='1.0.0',
+    version='1.2.0',
 
     description='Api wrapper for ibsear.ch and ibsearch.xxx',
     long_description=long_description,
