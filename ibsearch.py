@@ -69,9 +69,10 @@ class IbSearch:
         else:
             domain = DOMAIN_REGULAR
         # building querystring
-        params = {}
-        params['q'] = query
-        params['key'] = self.api_key
+        params = {
+            'q': query,
+            'key': self.api_key
+        }
         if limit:
             params['limit'] = limit
         if page is not 1:
@@ -104,9 +105,10 @@ class IbSearch:
         else:
             domain = DOMAIN_REGULAR
         # building querystring
-        params = {}
-        params['q'] = query
-        params['key'] = self.api_key
+        params = {
+            'q': query,
+            'key': self.api_key
+        }
         if limit:
             params['limit'] = limit
         if page is not 1:
