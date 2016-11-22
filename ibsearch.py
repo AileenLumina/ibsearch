@@ -56,7 +56,7 @@ class IbSearch:
         else:
             res = requests.get(url, headers=self.headers, params=params)
             if not res.status_code == 200:
-                raise UnexpectedResponseCode(res.status, res.text)
+                raise UnexpectedResponseCode(res.status_code, res.text)
             result = res.json()
             return result
 
