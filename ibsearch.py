@@ -40,7 +40,7 @@ class IbSearch:
             with aiohttp.ClientSession(loop=self.loop) as session:
                 res = yield from session.get(url, params=params, headers=self.headers)
                 if not res.status == 200:
-                    raise UnexpectedResponseCode(res.status, yield from res.text())
+                    raise UnexpectedResponseCode(res.status, (yield from res.text()))
                 try:
                     result = yield from res.json()
                 finally:
