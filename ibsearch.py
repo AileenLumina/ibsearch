@@ -25,26 +25,28 @@ class IbSearch:
     def __init__(self, api_key, loop=None):
         self.api_key = api_key
         self.headers = {'X-IbSearch-Key': self.api_key}
-        
         self.session = None
-        
         if loop:
             self.loop = loop
-    
-    async def _async_request(self, url, params=None):
+
+    @asyncio.coroutine
+    def _async_request(self, url, params=None):
         params = params or {}
         try:
             import aiohttp
         except ImportError:
             raise Exception("Aiohttp has to be installed to use this function.")
         else:
-            async with aiohttp.ClientSession(loop=self.loop) as session:
-                async with session.get(url, params=params, headers=self.headers) as res:
-                    if not res.status == 200:
-                        raise UnexpectedResponseCode(res.status, await res.text())
-                    result = await res.json()
+            with aiohttp.ClientSession(loop=self.loop) as session:
+                res = yield from session.get(url, params=params, headers=self.headers):
+                if not res.status == 200:
+                    raise UnexpectedResponseCode(res.status, yield from res.text())
+                try:
+                    result = yield from res.json()
+                finally:
+                    yield from res.release()
             return result
-    
+
     def _request(self, url, params=None):
         params = params or {}
         try:
@@ -56,18 +58,16 @@ class IbSearch:
             if not res.status_code == 200:
                 raise UnexpectedResponseCode(res.status, res.text)
             result = res.json()
-            
             return result
-    
-    async def async_search(self, query, *, limit=None, page=1, 
+
+    @asyncio.coroutine
+    def async_search(self, query, *, limit=None, page=1, 
                            nsfw_allowed=False, shuffle=False, 
                            shuffle_limit=None):
-
         if nsfw_allowed:
             domain = DOMAIN_NSFW
         else:
             domain = DOMAIN_REGULAR
-        
         # building querystring
         params = {}
         params['key'] = self.api_key
@@ -81,18 +81,14 @@ class IbSearch:
                 params['shuffle'] = shuffle_limit
             # Because this does not appear to work on IbSearch's end at the time of writing,
             # it needs to be done locally (see below).
-        
-        result = await self._async_request("http://" + domain + IMAGES_PATH, params)
+        result = yield from self._async_request("http://" + domain + IMAGES_PATH, params)
         try:
             result[0]
         except IndexError:
             raise NoResults
-            
         images = [Image(domain, **d) for d in result]
-        
         if shuffle:
             images = self.shuffle(images, shuffle_limit)
-        
         return images
     
     def search(self, query, *, limit=None, page=1, nsfw_allowed=False,
@@ -106,7 +102,6 @@ class IbSearch:
             domain = DOMAIN_NSFW
         else:
             domain = DOMAIN_REGULAR
-        
         # building querystring
         params = {}
         params['key'] = self.api_key
@@ -120,20 +115,16 @@ class IbSearch:
                 params['shuffle'] = shuffle_limit
             # Because this does not appear to work on IbSearch's end at the time of writing,
             # it needs to be done locally (see below).
-        
         result = self._request("http://" + domain + IMAGES_PATH, params)
         try:
             result[0]
         except IndexError:
             raise NoResults
-            
         images = [Image(domain, **d) for d in result]
-        
         if shuffle:
             images = self.shuffle(images, shuffle_limit)
-        
         return images
-        
+
     def shuffle(self, images, limit):
         random.shuffle(images)
         if limit:
@@ -141,9 +132,8 @@ class IbSearch:
                 images = images[0:limit]
             except IndexError:
                 pass # Just return the shuffled list
-       
         return images
-    
+
     def get_random_image(self, query, nsfw_allowed=False, async_=False):
         if async_:
             return self.async_get_random_image(query, nsfw_allowed=nsfw_allowed)
@@ -154,9 +144,10 @@ class IbSearch:
         except IndexError:
             # Not supposed to happen but here just in case
             raise NoResults
-            
-    async def async_get_random_image(self, query, nsfw_allowed=False):
-        image_list = await self.async_search(query, limit=100, nsfw_allowed=nsfw_allowed, shuffle=True, shuffle_limit=1)
+
+    @asyncio.coroutine
+    def async_get_random_image(self, query, nsfw_allowed=False):
+        image_list = yield from self.async_search(query, limit=100, nsfw_allowed=nsfw_allowed, shuffle=True, shuffle_limit=1)
         try:
             image = image_list[0]
             return image
