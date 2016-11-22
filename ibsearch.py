@@ -21,6 +21,59 @@ class Image:
         self.url = "http://" + kwargs.get("server") + "." + baseurl + self.path
         self.tags = kwargs.get("tags").split()
 
+    @asyncio.coroutine
+    def _async_request(self):
+        try:
+            import aiohttp
+        except ImportError:
+            raise Exception("Aiohttp has to be installed to use this function.")
+        else:
+
+            with aiohttp.ClientSession(loop=self.loop) as session:
+                res = yield from session.get(self.url)
+
+                if not res.status == 200:
+                    raise UnexpectedResponseCode(res.status, (yield from res.text()))
+
+                try:
+                    result = yield from res.read()
+                finally:
+                    yield from res.release()
+
+            return result
+
+    def _request(self):
+        try:
+            import requests
+        except ImportError:
+            print("Requests has to be installed to use this function.")
+        else:
+            res = requests.get(self.url)
+            if not res.status_code == 200:
+                raise UnexpectedResponseCode(res.status_code, res.text)
+            result = res.content
+            return result
+        
+    def get_image_bytes(self, async_=False):
+        """ Download the image and return the bytes """
+        if async_:
+            im_bytes = yield from self._request_async()
+            return im_bytes
+        else:
+            im_bytes = self._request()
+            yield im_bytes
+
+    def save(self, async_=False, file=None):
+        file = file or self.path.split("/")[-1]
+
+        if async_:
+            im_bytes = yield from self.get_image_bytes()
+        else:
+            im_bytes = next(self.get_image_bytes())
+
+        with open(file, "wb") as f:
+            f.write(im_bytes)
+
 class IbSearch:
     def __init__(self, api_key, loop=None):
         self.api_key = api_key
