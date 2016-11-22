@@ -102,9 +102,7 @@ class IbSearch:
         else:
             result = self._request(url, params)
 
-        try:
-            result[0]
-        except IndexError:
+        if len(result) == 0:
             raise NoResults
 
         images = [Image(domain, **d) for d in result]
