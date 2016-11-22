@@ -104,6 +104,7 @@ class IbSearch:
             domain = DOMAIN_REGULAR
         # building querystring
         params = {}
+        params['q'] = query
         params['key'] = self.api_key
         if limit:
             params['limit'] = limit
