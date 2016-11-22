@@ -38,7 +38,7 @@ class IbSearch:
             raise Exception("Aiohttp has to be installed to use this function.")
         else:
             with aiohttp.ClientSession(loop=self.loop) as session:
-                res = yield from session.get(url, params=params, headers=self.headers):
+                res = yield from session.get(url, params=params, headers=self.headers)
                 if not res.status == 200:
                     raise UnexpectedResponseCode(res.status, yield from res.text())
                 try:
