@@ -82,9 +82,9 @@ class IbSearch:
             # it needs to be done locally (see below).
         return params
 
-	@asyncio.coroutine
-	def async_search(self, *args):
-		yield from self.search(*args, async_=True)
+    @asyncio.coroutine
+    def async_search(self, *args):
+        yield from self.search(*args, async_=True)
 
     def search(self, query, *, limit=None, page=1, nsfw_allowed=False,
                shuffle=False, shuffle_limit=None, async_=False):

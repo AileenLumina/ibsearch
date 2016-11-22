@@ -22,4 +22,4 @@ def nsfw_test():
 if __name__ == '__main__':
     test()
     loop.run_until_complete(async_test())
-	nsfw_test()
+    nsfw_test()
