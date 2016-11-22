@@ -9,6 +9,7 @@ cl = ibsearch.IbSearch(TEST_KEY, loop=loop)
 def test():
     image1 = cl.get_random_image(test_query)
     print(image1.url)
+    print(next(image1.get_image_bytes()).read())
 
 @asyncio.coroutine
 def async_test():

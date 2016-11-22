@@ -4,6 +4,7 @@ IMAGES_PATH = 'api/v1/images.json'
 
 import random
 import asyncio
+import io
 
 class NoResults(Exception):
     pass
@@ -32,10 +33,9 @@ class Image:
             with aiohttp.ClientSession(loop=self.loop) as session:
                 res = yield from session.get(self.url)
 
-                if not res.status == 200:
-                    raise UnexpectedResponseCode(res.status, (yield from res.text()))
-
                 try:
+                    if not res.status == 200:
+                        raise UnexpectedResponseCode(res.status, (yield from res.text()))
                     result = yield from res.read()
                 finally:
                     yield from res.release()
@@ -57,22 +57,31 @@ class Image:
     def get_image_bytes(self, async_=False):
         """ Download the image and return the bytes """
         if async_:
-            im_bytes = yield from self._request_async()
-            return im_bytes
+            im_bytes = yield from self._async_request()
+            bio = io.BytesIO()
+            bio.write(im_bytes)
+            return bio
         else:
             im_bytes = self._request()
-            yield im_bytes
+            bio = io.BytesIO()
+            bio.write(im_bytes)
+            yield bio
 
     def save(self, async_=False, file=None):
         file = file or self.path.split("/")[-1]
 
         if async_:
-            im_bytes = yield from self.get_image_bytes()
+            bio = yield from self.get_image_bytes()
         else:
-            im_bytes = next(self.get_image_bytes())
+            bio = next(self.get_image_bytes())
 
         with open(file, "wb") as f:
-            f.write(im_bytes)
+            f.write(bio.read())
+
+        if async_:
+            return file
+        else:
+            yield file
 
 class IbSearch:
     def __init__(self, api_key, loop=None):
@@ -95,10 +104,9 @@ class IbSearch:
             with aiohttp.ClientSession(loop=self.loop) as session:
                 res = yield from session.get(url, params=params, headers=self.headers)
 
-                if not res.status == 200:
-                    raise UnexpectedResponseCode(res.status, (yield from res.text()))
-
                 try:
+                    if not res.status == 200:
+                        raise UnexpectedResponseCode(res.status, (yield from res.text()))
                     result = yield from res.json()
                 finally:
                     yield from res.release()
