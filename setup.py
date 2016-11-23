@@ -8,12 +8,12 @@ with open('README.md') as f:
 
 setup(
     name='ibsearch',
-    version='1.4.0',
-    description='Api wrapper for ibsear.ch and ibsearch.xxx',
+    version='0.9',
+    description='API wrapper for IbSearch.',
     long_description=long_description,
-    url='https://github.com/aileenlumina/ibsearch',
-    author='aileenlumina',
-    author_email='username"example.com', # I don´t know this
+    url='https://github.com/AileenLumina/ibsearch',
+    author='AileenLumina',
+    author_email='aileenfromthemoon@gmail.com',
     license='MIT',
     classifiers=[
         'Development Status :: 5 - Stable',
