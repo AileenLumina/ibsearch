@@ -132,7 +132,7 @@ class IbSearch:
     @staticmethod
     def _build_params(query, limit, page, shuffle, shuffle_limit):
         params = {
-            'q': query
+            'q': query.replace(" ","+")
         }
         if limit:
             params['limit'] = limit
@@ -154,6 +154,7 @@ class IbSearch:
                shuffle=False, shuffle_limit=None, async_=False):
         if nsfw_allowed:
             domain = DOMAIN_NSFW
+            query += "+rating:e"
         else:
             domain = DOMAIN_REGULAR
 
