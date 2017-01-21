@@ -1,1 +1,2 @@
-This is an API wrapper for the ibsear.ch and ibsearch.xxx API written in python.
+# IbSearch Python API Wrapper
+This API wrapper aims at making software that uses images from Anime Imageboards as easy as possible. Currently, only basic functionality is provided, and it probably hasn't been fully optimized, but it is already a stable piece of software that does what it should. If you experience any issues, use Github's Issue Tracker to file an issue. Thanks for your help, and have fun!
