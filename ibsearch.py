@@ -6,6 +6,8 @@ import random
 import asyncio
 import io
 
+from urllib.parse import urlencode, unquote
+
 class NoResults(Exception):
     pass
 
@@ -94,16 +96,21 @@ class IbSearch:
         if loop:
             self.loop = loop
 
+    def build_url(self, url, params):
+        """ Due to `params` as kwarg being % escaped """
+        return url + "?" + unquote(urlencode(params))
+    
     @asyncio.coroutine
     def _async_request(self, url, params=None):
         params = params or {}
+        
+        url = self.build_url(url, params)
         
         try:
             import aiohttp
         except ImportError:
             raise Exception("Aiohttp has to be installed to use this function.")
         else:
-
             with aiohttp.ClientSession(loop=self.loop) as session:
                 res = yield from session.get(url, params=params, headers=self.headers)
 
@@ -118,12 +125,14 @@ class IbSearch:
 
     def _request(self, url, params=None):
         params = params or {}
+
+        url = self.build_url(url, params)
+        
         try:
             import requests
         except ImportError:
             print("Requests has to be installed to use this function.")
         else:
-            res = requests.get(url, headers=self.headers, params=params)
             if not res.status_code == 200:
                 raise UnexpectedResponseCode(res.status_code, res.text)
             result = res.json()
@@ -132,7 +141,7 @@ class IbSearch:
     @staticmethod
     def _build_params(query, limit, page, shuffle, shuffle_limit):
         params = {
-            'q': query
+            'q': query.replace(" ","+")
         }
         if limit:
             params['limit'] = limit
