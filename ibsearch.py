@@ -99,7 +99,7 @@ class IbSearch:
     def build_url(self, url, params):
         """ Due to `params` as kwarg being % escaped """
         return url + "?" + unquote(urlencode(params))
-            
+    
     @asyncio.coroutine
     def _async_request(self, url, params=None):
         params = params or {}
@@ -112,7 +112,8 @@ class IbSearch:
             raise Exception("Aiohttp has to be installed to use this function.")
         else:
             with aiohttp.ClientSession(loop=self.loop) as session:
-                res = yield from session.get(url, headers=self.headers)
+                res = yield from session.get(url, params=params, headers=self.headers)
+
                 try:
                     if not res.status == 200:
                         raise UnexpectedResponseCode(res.status, (yield from res.text()))
@@ -124,7 +125,7 @@ class IbSearch:
 
     def _request(self, url, params=None):
         params = params or {}
-        
+
         url = self.build_url(url, params)
         
         try:
@@ -132,7 +133,6 @@ class IbSearch:
         except ImportError:
             print("Requests has to be installed to use this function.")
         else:
-            res = requests.get(url, headers=self.headers)
             if not res.status_code == 200:
                 raise UnexpectedResponseCode(res.status_code, res.text)
             result = res.json()
@@ -163,7 +163,6 @@ class IbSearch:
                shuffle=False, shuffle_limit=None, async_=False):
         if nsfw_allowed:
             domain = DOMAIN_NSFW
-            query += "+rating:e"
         else:
             domain = DOMAIN_REGULAR
 
@@ -176,8 +175,6 @@ class IbSearch:
         else:
             result = self._request(url, params)
 
-        print(result)
-            
         if len(result) == 0:
             raise NoResults
 
